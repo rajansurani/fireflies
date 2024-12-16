@@ -1,10 +1,12 @@
 import mongoose from 'mongoose';
-import { Meeting, IMeeting } from './models/meeting.js';
-import { Task, ITask } from './models/task.js';
+import { MeetingModel } from './models/meeting.model';
+import { TaskModel } from './models/task.model';
+import { IMeeting } from './interfaces/models/IMeeting';
+import { ITask } from './interfaces/models/ITask';
 
-const MONGODB_URI = 'mongodb://localhost:27017/meetingbot';
+const MONGODB_URI = process.env.MONGODB_URI;
 
-await mongoose.connect(MONGODB_URI)
+await mongoose.connect(MONGODB_URI!)
   .then(() => console.log('Connected to MongoDB for seeding'))
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -23,13 +25,13 @@ function randomParticipants(): string[] {
 }
 
 async function seedMeetings() {
-  await Meeting.deleteMany({});
+  await MeetingModel.deleteMany({});
 
   const meetings: IMeeting[] = [];
 
   for (let i = 0; i < 100; i++) {
     const userId = users[Math.floor(Math.random() * users.length)];
-    const meeting = new Meeting({
+    const meeting = new MeetingModel({
       userId: userId,
       title: `Meeting ${i + 1}`,
       date: randomDate(new Date(2023, 0, 1), new Date()),
@@ -44,20 +46,20 @@ async function seedMeetings() {
     meetings.push(meeting);
   }
 
-  await Meeting.insertMany(meetings);
+  await MeetingModel.insertMany(meetings);
   console.log('Meetings seeded successfully');
 }
 
 async function seedTasks() {
-  await Task.deleteMany({});
+  await TaskModel.deleteMany({});
 
-  const meetings = await Meeting.find();
+  const meetings = await MeetingModel.find();
   const tasks: ITask[] = [];
 
   for (const meeting of meetings) {
     const taskCount = Math.floor(Math.random() * 3) + 1; // 1 to 3 tasks per meeting
     for (let i = 0; i < taskCount; i++) {
-      const task = new Task({
+      const task = new TaskModel({
         meetingId: meeting._id,
         userId: meeting.userId,
         title: `Task ${i + 1} from ${meeting.title}`,
@@ -69,7 +71,7 @@ async function seedTasks() {
     }
   }
 
-  await Task.insertMany(tasks);
+  await TaskModel.insertMany(tasks);
   console.log('Tasks seeded successfully');
 }
 
