@@ -9,6 +9,9 @@ export const validateMeeting = (data: Partial<IMeeting>): string | null => {
   if (!data.date) {
     return 'Date is required';
   }
+  if (isNaN(new Date(data.date).getTime())) {
+    return 'Invalid date format';
+  }
 
   if (!Array.isArray(data.participants) || data.participants.length === 0) {
     return 'At least one participant is required';
